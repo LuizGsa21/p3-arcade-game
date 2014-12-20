@@ -57,9 +57,15 @@ Player.prototype.render = function() {
     ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
 };
 
-// Called when player presses an arrow key
+// Called when player releases key
 Player.prototype.handleInput = function(keyCode) {
 
+    switch (keyCode) {
+        case 'left': this.x -= 101; break;
+        case 'right': this.x += 101; break;
+        case 'up': this.y -= 83; break;
+        case 'down': this.y += 83; break;
+    }
 };
 
 // Now instantiate your objects.
@@ -68,12 +74,12 @@ Player.prototype.handleInput = function(keyCode) {
 var player = new Player(5, 2, 1);
 var allEnemies = [
     new Enemy(1, 0, 1),
-    new Enemy(2, 0, 1),
-    new Enemy(3, 0, 1)
+    new Enemy(2, 0, 2),
+    new Enemy(3, 0, 3)
 ];
 
 
-// This listens for key presses and sends the keys to your
+// This listens for key releases and sends the keys to your
 // Player.handleInput() method. You don't need to modify this.
 document.addEventListener('keyup', function(e) {
     var allowedKeys = {
