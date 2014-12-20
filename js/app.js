@@ -1,5 +1,19 @@
+/**
+ * This class sets the object's starting position and movement speed.
+ * All moveable objects should .call() this class.
+ * Parameters:
+ *  rowPosition - Row position starting at 0 from top-down.
+ *  colPosition - Column position starting at 0 from left-to-right
+ *  speed - Object's speed, which is multiplied by delta time * 100
+ */
+var Moveable = function(rowPosition, colPosition, speed) {
+    this.x = 0 + (colPosition * 101);
+    this.y = (rowPosition * 83) - 41.5;
+    this.speed = speed;
+}
 // Enemies our player must avoid
-var Enemy = function() {
+var Enemy = function(rowPosition, colPosition, speed) {
+    Moveable.call(rowPosition, colPosition, speed);
     // Variables applied to each of our instances go here,
     // we've provided one for you to get started
 
