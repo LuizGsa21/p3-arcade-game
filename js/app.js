@@ -13,7 +13,7 @@ var Moveable = function(rowPosition, colPosition, speed) {
 };
 // Enemies our player must avoid
 var Enemy = function(rowPosition, colPosition, speed) {
-    Moveable.call(rowPosition, colPosition, speed);
+    Moveable.call(this, rowPosition, colPosition, speed);
     // Variables applied to each of our instances go here,
     // we've provided one for you to get started
 
@@ -41,7 +41,7 @@ Enemy.prototype.render = function() {
 // This class requires an update(), render() and
 // a handleInput() method.
 var Player = function(rowPosition, colPosition, speed) {
-    Moveable.call(rowPosition, colPosition, speed);
+    Moveable.call(this, rowPosition, colPosition, speed);
 
     this.sprite = 'images/char-boy.png';
 };
@@ -66,6 +66,11 @@ Player.prototype.handleInput = function(keyCode) {
 // Place all enemy objects in an array called allEnemies
 // Place the player object in a variable called player
 var player = new Player(5, 2, 1);
+var allEnemies = [
+    new Enemy(1, 0, 1),
+    new Enemy(2, 0, 1),
+    new Enemy(3, 0, 1)
+];
 
 
 // This listens for key presses and sends the keys to your
