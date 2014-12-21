@@ -1,6 +1,6 @@
-frontend-nanodegree-arcade-game
+Project 3 Arcade Game
 ===============================
 
-Students should use this rubric: https://www.udacity.com/course/viewer#!/c-ud015/l-3072058665/m-3072588797
+Recreate the classic arcade game Frogger.
 
-for self-checking their submission.
+WORK IN PROGRESS! :)
