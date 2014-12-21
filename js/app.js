@@ -24,6 +24,11 @@ var Const = {
         WIDTH: 101,
         HEIGHT: 83
     },
+    block: {
+        GRASS: 'images/grass-block.png',
+        STONE: 'images/stone-block.png',
+        WATER: 'images/water-block.png'
+    },
     canvas: {
         WIDTH: 505,
         HEIGHT: 606
