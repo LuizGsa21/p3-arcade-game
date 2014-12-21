@@ -46,9 +46,8 @@ var Player = function(rowPosition, colPosition, speed) {
     this.sprite = 'images/char-boy.png';
 };
 
-// Update the player's position
-// Parameter: dt, a time delta between ticks
-Player.prototype.update = function(dt) {
+// Update the player's properties
+Player.prototype.update = function() {
 
 };
 
@@ -61,11 +60,24 @@ Player.prototype.render = function() {
 Player.prototype.handleInput = function(keyCode) {
 
     switch (keyCode) {
-        case 'left': this.x -= 101; break;
-        case 'right': this.x += 101; break;
-        case 'up': this.y -= 83; break;
-        case 'down': this.y += 83; break;
+        case 'left':
+            if (this.x > 0)
+                this.x -= 101;
+            break;
+        case 'right':
+            if (this.x < ctx.canvas.width - 101)
+                this.x += 101;
+            break;
+        case 'up':
+            if (this.y > 0)
+                this.y -= 83;
+            break;
+        case 'down':
+            if (this.y < ctx.canvas.height - 303)
+                this.y += 83;
+            break;
     }
+
 };
 
 // Now instantiate your objects.
@@ -89,5 +101,6 @@ document.addEventListener('keyup', function(e) {
         40: 'down'
     };
 
-    player.handleInput(allowedKeys[e.keyCode]);
+    if (e.keyCode !== undefined)
+        player.handleInput(allowedKeys[e.keyCode]);
 });
