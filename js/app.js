@@ -18,7 +18,8 @@ var Const = {
     misc : {
         KEY: 'images/Key.png',
         STAR: 'images/Star.png',
-        SELECTOR: 'images/Selector.png'
+        SELECTOR: 'images/Selector.png',
+        HEART: 'images/Heart.png'
     },
     grid : {
         WIDTH: 101,
@@ -107,6 +108,8 @@ var Player = function(rowPosition, colPosition, image) {
     // startX and startY will be the player's respawn position
     this.startX = this.x;
     this.startY = this.y;
+
+    this.lives = 5;
 };
 
 // Player extends Moveable class
@@ -119,6 +122,10 @@ Player.prototype.constructor = Player;
 Player.prototype.die = function() {
     this.x = this.startX;
     this.y = this.startY;
+    this.lives--;
+    if (this.lives < 0) {
+        //gameOver();
+    }
 };
 
 // Checks if player intersects enemy
