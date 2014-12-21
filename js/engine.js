@@ -104,6 +104,7 @@ var Engine = (function(global) {
      * they are just drawing the entire screen over and over.
      */
     function render() {
+
         /* This array holds the relative URL to the image used
          * for that particular row of the game level.
          */
@@ -118,6 +119,9 @@ var Engine = (function(global) {
             numRows = 6,
             numCols = 5,
             row, col;
+
+        // Clears entire canvas
+        ctx.putImageData(blankImg, 0, 0);
 
         /* Loop through the number of rows and columns we've defined above
          * and, using the rowImages array, draw the correct image for that
@@ -134,6 +138,13 @@ var Engine = (function(global) {
                  */
                 ctx.drawImage(Resources.get(rowImages[row]), col * Const.grid.WIDTH, row * Const.grid.HEIGHT);
             }
+        }
+
+        /**
+         * Draws the players lives left (Hearts)
+         */
+        for (var i = 0; i < player.lives; i++) {
+            ctx.drawImage(Resources.get(Const.misc.HEART), 50 * i, 0, 50,50);
         }
 
 
@@ -163,6 +174,9 @@ var Engine = (function(global) {
         // noop
     }
 
+    // This blankImage will be used to erase the canvas.
+    var blankImg = ctx.createImageData(canvas.width, canvas.height);
+
     /* Go ahead and load all of the images we know we're going to need to
      * draw our game level. Then set init as the callback method, so that when
      * all of these images are properly loaded our game will start.
@@ -173,6 +187,7 @@ var Engine = (function(global) {
         Const.block.GRASS,
         Const.enemy.BUG,
         Const.player.BOY,
+        Const.misc.HEART
     ]);
     Resources.onReady(init);
 
