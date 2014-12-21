@@ -137,6 +137,7 @@ var Engine = (function(global) {
                  * we're using them over and over.
                  */
                 ctx.drawImage(Resources.get(rowImages[row]), col * Const.grid.WIDTH, row * Const.grid.HEIGHT);
+
             }
         }
 
@@ -146,7 +147,6 @@ var Engine = (function(global) {
         for (var i = 0; i < player.lives; i++) {
             ctx.drawImage(Resources.get(Const.misc.HEART), 50 * i, 0, 50,50);
         }
-
 
         renderEntities();
     }
@@ -161,6 +161,9 @@ var Engine = (function(global) {
          */
         allEnemies.forEach(function(enemy) {
             enemy.render();
+            if (enemy.x > Const.grid.WIDTH * 4) {
+                ctx.putImageData(blankGridImg, Const.grid.WIDTH * 5, enemy.y + 77);
+            }
         });
 
         player.render();
@@ -176,6 +179,7 @@ var Engine = (function(global) {
 
     // This blankImage will be used to erase the canvas.
     var blankImg = ctx.createImageData(canvas.width, canvas.height);
+    var blankGridImg = ctx.createImageData(Const.grid.WIDTH, Const.grid.HEIGHT);
 
     /* Go ahead and load all of the images we know we're going to need to
      * draw our game level. Then set init as the callback method, so that when
@@ -187,7 +191,10 @@ var Engine = (function(global) {
         Const.block.GRASS,
         Const.enemy.BUG,
         Const.player.BOY,
-        Const.misc.HEART
+        Const.misc.HEART,
+        Const.gem.BLUE,
+        Const.gem.GREEN,
+        Const.gem.ORANGE,
     ]);
     Resources.onReady(init);
 

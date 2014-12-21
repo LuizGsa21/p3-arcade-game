@@ -31,7 +31,7 @@ var Const = {
         WATER: 'images/water-block.png'
     },
     canvas: {
-        WIDTH: 505,
+        WIDTH: 606,
         HEIGHT: 606
     },
     SPEED_FACTOR: 100
@@ -94,8 +94,8 @@ Enemy.prototype.constructor = Enemy;
 // Update the enemy's position
 // Parameter: dt, a time delta between ticks
 Enemy.prototype.update = function(dt) {
-    if (this.x > ctx.canvas.width) {
-        this.x = 0;
+    if (this.x > Const.grid.WIDTH * 5) {
+        this.x = -101;
     } else {
         this.x += dt * Const.SPEED_FACTOR * this.speed;
     }
@@ -167,9 +167,9 @@ var player = new Player(5, 2, Const.player.BOY);
 
 // Create Enemies
 var allEnemies = [
-    new Enemy(1, 0, Const.enemy.BUG, 2),
-    new Enemy(2, 0, Const.enemy.BUG, 2),
-    new Enemy(3, 0, Const.enemy.BUG, 2)
+    new Enemy(1, -1, Const.enemy.BUG, 2),
+    new Enemy(2, -1, Const.enemy.BUG, 2),
+    new Enemy(3, -1, Const.enemy.BUG, 2)
 ];
 
 
