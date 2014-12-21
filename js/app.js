@@ -1,24 +1,24 @@
 // Constant object used for convenience
 var Const = {
     player: {
-        BOY : "images/char-boy.png",
-        CAT_GIRL : "images/char-cat-girl.png",
-        HORN_GIRL : "char-horn-girl.png",
-        PINK_GIRL : "images/char-pink-girl.png",
-        PRINCESS_GIRL : "images/char-princess-girl.png"
+        BOY : 'images/char-boy.png',
+        CAT_GIRL : 'images/char-cat-girl.png',
+        HORN_GIRL : 'char-horn-girl.png',
+        PINK_GIRL : 'images/char-pink-girl.png',
+        PRINCESS_GIRL : 'images/char-princess-girl.png'
     },
     enemy : {
-        "BUG" : "images/enemy-bug.png"
+        BUG : 'images/enemy-bug.png'
     },
     gem : {
-        BLUE : "images/Gem-Blue.png",
-        GREEN : "images/Gem-Green.png",
-        ORANGE : "images/Gem-Orange.png"
+        BLUE : 'images/Gem-Blue.png',
+        GREEN : 'images/Gem-Green.png',
+        ORANGE : 'images/Gem-Orange.png'
     },
     misc : {
-        KEY: "images/Key.png",
-        STAR: "images/Star.png",
-        SELECTOR: "images/Selector.png"
+        KEY: 'images/Key.png',
+        STAR: 'images/Star.png',
+        SELECTOR: 'images/Selector.png'
     },
     grid : {
         WIDTH: 101,
