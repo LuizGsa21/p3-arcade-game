@@ -11,9 +11,9 @@ var Const = {
         BUG : 'images/enemy-bug.png'
     },
     gem : {
-        BLUE : 'images/Gem-Blue.png',
-        GREEN : 'images/Gem-Green.png',
-        ORANGE : 'images/Gem-Orange.png'
+        BLUE : 'images/gem-blue.png',
+        GREEN : 'images/gem-green.png',
+        ORANGE : 'images/gem-orange.png'
     },
     misc : {
         KEY: 'images/Key.png',
