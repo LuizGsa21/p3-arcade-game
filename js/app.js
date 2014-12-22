@@ -46,18 +46,18 @@ var Const = {
  *  widthBounds - imaginary rectangle width, used to detect collision
  *  heightBounds - imaginary rectangle height, used to detect collision
  */
-var Moveable = function(rowPosition, colPosition, image, widthBounds, heightBounds) {
+var Moveable = function(rowPosition, colPosition, image) {
     this.x = colPosition * Const.grid.WIDTH;
     this.y = (rowPosition * Const.grid.HEIGHT) - 41.5; // subtracting 41.5 to center object on grid
 
     // The image/sprite will be drawn on screen when render() is called
     this.sprite = image;
 
-    // set default width/height bounds if not specified
+    // set default width/height bounds
     // Why not use the grid's default width?
     //  Because the collisions seem to happen too early.
-    this.widthBounds = widthBounds || 80;
-    this.heightBounds = heightBounds || Const.grid.HEIGHT;
+    this.widthBounds = 80;
+    this.heightBounds = Const.grid.HEIGHT;
 };
 
 // Draws the object on screen
@@ -69,7 +69,6 @@ Moveable.prototype.render = function() {
         ctx.drawImage(Resources.get(this.sprite), 0,0, width, 171, this.x, this.y, width, 171);
     } else {
         ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
-
     }
 };
 
@@ -151,6 +150,17 @@ Player.prototype.update = function() {
             this.die();
         }
     }
+    l = allGems.length;
+    for(var i = 0; i < l; i++) {
+        if (this.intersects(allGems[i]) && allGems[i].isAvailable) {
+            switch (allGems[i].color) {
+                case 1: this.gems.blue += 1; break;
+                case 2: this.gems.orange += 1; break;
+                case 3: this.gems.green += 1; break;
+            }
+            allGems[i].isAvailable = false;
+        }
+    }
 };
 
 // Gets called when player releases a valid key
@@ -177,15 +187,68 @@ Player.prototype.handleInput = function(keyCode) {
 
 };
 
+var Gem = function(rowPosition, colPosition, image) {
+    Moveable.call(this, rowPosition, colPosition, image);
+    this.color;
+    switch (image) {
+        case Const.gems.BLUE: this.color = 1; break;
+        case Const.gems.ORANGE: this.color = 2; break;
+        case Const.gems.GREEN: this.color = 3; break;
+        default:
+            this.color = 0;
+    }
+    this.isAvailable = true;
+}
+
+Gem.prototype.render = function() {
+    ctx.drawImage(Resources.get(this.sprite), this.x + 25, this.y + 70, 50,85);
+}
+
+var Selector = function(rowPosition, colPosition) {
+    Moveable.call(this, rowPosition, colPosition, Const.misc.SELECTOR);
+    console.log(this.x);
+    console.log(this.y);
+}
+
+Selector.prototype = Object.create(Moveable.prototype);
+Selector.constructor = Selector;
+
+
 // Create player at Row: 5 Col: 2
 var player = new Player(5, 2, Const.player.BOY);
 
 // Create Enemies
-var allEnemies = [
-    new Enemy(1, -1, Const.enemy.BUG, 2),
-    new Enemy(2, -1, Const.enemy.BUG, 2),
-    new Enemy(3, -1, Const.enemy.BUG, 2)
-];
+var allEnemies = [];
+var allSelectors = [];
+var allGems = [];
+//var allOrangeGems = [];
+//var allBlueGems = [];
+//var allgreenGems = [];
+
+function gameLevel(level) {
+    // All game levels
+    switch (level) {
+        case 1:
+            allEnemies = [
+                //new Enemy(1, -1, Const.enemy.BUG, 2),
+                //new Enemy(2, -3, Const.enemy.BUG, 3),
+                //new Enemy(3, -1, Const.enemy.BUG, 1),
+                //new Enemy(3, -4, Const.enemy.BUG, 1),
+            ];
+            allSelectors = [0,1,2,3,4];
+            allGems = [
+                new Gem(1, 1, Const.gems.BLUE),
+                new Gem(2, 2, Const.gems.ORANGE),
+                new Gem(3, 3, Const.gems.GREEN),
+            ];
+            allSelectors = [
+                new Selector(0, 0),
+                new Selector(0, 2),
+                new Selector(0, 4)
+            ];
+    }
+}
+gameLevel(1);
 
 
 // This listens for key releases and sends the keys to

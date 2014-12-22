@@ -141,6 +141,16 @@ var Engine = (function(global) {
             }
         }
 
+        // Draw gems
+        for (var i = 0; i < allGems.length; i++) {
+            if (allGems[i].isAvailable) {
+                allGems[i].render();
+            }
+        }
+        for (var i = 0; i < allSelectors.length; i++) {
+            allSelectors[i].render();
+        }
+
         renderEntities();
 
         playerInfo();
@@ -209,7 +219,8 @@ var Engine = (function(global) {
         Const.gems.BLUE,
         Const.gems.GREEN,
         Const.gems.ORANGE,
-        Const.misc.KEY
+        Const.misc.KEY,
+        Const.misc.SELECTOR
     ]);
     Resources.onReady(init);
 
