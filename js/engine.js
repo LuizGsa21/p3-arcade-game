@@ -141,23 +141,35 @@ var Engine = (function(global) {
             }
         }
 
-        // Draw gems
-        for (var i = 0; i < allGems.length; i++) {
-            if (allGems[i].isAvailable) {
-                allGems[i].render();
-            }
-        }
         for (var i = 0; i < allSelectors.length; i++) {
             allSelectors[i].render();
         }
 
+        renderObstacles();
+
+        renderItems();
+
         renderEntities();
 
-        playerInfo();
+        playerStats();
     }
 
-    function playerInfo() {
+    function renderObstacles() {
+        for (var i = 0; i < allObstacles.length; i++) {
+            allObstacles[i].render();
+        }
+    }
 
+    function renderItems() {
+        // Draws all available items
+        for (var i = 0; i < allItems.length; i++) {
+            if (allItems[i].isAvailable) {
+                allItems[i].render();
+            }
+        }
+    }
+
+    function playerStats() {
 
         /**
          * Draws the player's health (hearts on top of the canvas)
@@ -166,15 +178,26 @@ var Engine = (function(global) {
             ctx.drawImage(Resources.get(Const.misc.HEART), 30 * i, 0, 30,50);
         }
 
-        // Draws player key stats
-        ctx.drawImage(Resources.get(Const.misc.KEY), 516, 50, 40, 68);
-        ctx.fillText('x' + player.keys, 546, 105);
+        // Right sidebar
+
+        // By incrementing playerStatPoints on every tick
+        // the player gets to visually see his/her points increase
+        if (player.points > playerStatPoints) {
+            playerStatPoints++;
+        }
+        ctx.fillText('Points: ' + playerStatPoints, 515, 115);
+
+        ctx.drawImage(Resources.get(Const.misc.STAR), 512, 110, 40, 68);
+        ctx.fillText('x' + player.stars, 546, 165);
+
+        ctx.drawImage(Resources.get(Const.misc.KEY), 512, 150, 40, 68);
+        ctx.fillText('x' + player.keyItems, 546, 205);
 
 
         // Draws player gem stats
         for (var i = 0; i < gems.length; i++) {
-            ctx.drawImage(Resources.get(gems[i]), 516, 100 + (i * 40), 30, 51);
-            ctx.fillText('x' + player.gems[playerGems[i]], 546, 140 + (i * 40));
+            ctx.drawImage(Resources.get(gems[i]), 516, 200 + (i * 40), 30, 51);
+            ctx.fillText('x' + player.gems[playerGems[i]], 546, 240 + (i * 40));
         }
 
     }
@@ -220,7 +243,9 @@ var Engine = (function(global) {
         Const.gems.GREEN,
         Const.gems.ORANGE,
         Const.misc.KEY,
-        Const.misc.SELECTOR
+        Const.misc.SELECTOR,
+        Const.misc.STAR,
+        Const.misc.ROCK
     ]);
     Resources.onReady(init);
 
@@ -239,6 +264,8 @@ var Engine = (function(global) {
         Const.gems.ORANGE,
         Const.gems.GREEN,
     ];
+    var playerStatPoints = 0; // used for player point increment animation
+
     var playerGems = Object.keys(player.gems);
 
 })(this);

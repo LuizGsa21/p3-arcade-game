@@ -19,7 +19,8 @@ var Const = {
         KEY: 'images/Key.png',
         STAR: 'images/Star.png',
         SELECTOR: 'images/Selector.png',
-        HEART: 'images/Heart.png'
+        HEART: 'images/Heart.png',
+        ROCK: 'images/Rock.png'
     },
     grid : {
         WIDTH: 101,
@@ -67,6 +68,12 @@ Static.prototype.render = function() {
 };
 // --------- END of Static class
 
+var Item = function(row, col, image, isAvailable) {
+    Static.call(this, row, col, image);
+    // Should be set to false when player collects this item
+    // With the exception of keys (keys should only be available after all stars are collected)
+    this.isAvailable = isAvailable;
+}
 /**
  * Gem Class
  * @param row
@@ -108,8 +115,8 @@ var Gem = function(row,col, color, dX, dY, height, width) {
             image = 'images/gem-blue.png';
             break;
     }
-    // Set x, y coordinates and sprite image
-    Static.call(this, row, col, image);
+    // Set x, y coordinates and sprite image and item availability
+    Item.call(this, row, col, image, true);
 };
 
 // Draws the object on screen
@@ -121,25 +128,38 @@ Gem.prototype.render = function() {
 
 // Key class
 var Key = function(row,col) {
-    Static.call(this, row, col, 'images/Key.png');
-    this.isAvailable = true;
+    Item.call(this, row, col, 'images/Key.png', false);
+    this.isAvailable = false;
     this.points = 25;
 };
 
 Key.prototype = Object.create(Static.prototype);
 Key.prototype.constructor = Key;
 
+var Star = function(row, col) {
+    Item.call(this, row, col, 'images/Star.png', true);
+    this.life = 1;
+    this.points = 25;
+};
+
+Star.prototype = Object.create(Static.prototype);
+Star.prototype.constructor = Star;
 
 // Selector Class
-var Selector = function(rowPosition, colPosition) {
+var Selector = function(row, col) {
     // Set x, y coordinates and sprite image
-    Static.call(this, rowPosition, colPosition, 'images/Selector.png');
-    // Should be set to false when player collects this gem
-    this.isAvailable = true;
+    Static.call(this, row, col, 'images/Selector.png');
 };
 
 Selector.prototype = Object.create(Static.prototype);
 Selector.constructor = Selector;
+
+var Rock = function(row, col) {
+    Static.call(this, row, col, 'images/Rock.png');
+};
+
+Rock.prototype = Object.create(Static.prototype);
+Rock.constructor = Rock;
 
 
 /**
@@ -197,6 +217,13 @@ Enemy.prototype.update = function(dt) {
     }
 };
 
+var Bug = function(row, col, speed) {
+    Enemy.call(this, row, col, 'images/enemy-bug.png', speed);
+}
+
+Bug.prototype = Object.create(Enemy.prototype);
+Bug.prototype.constructor = Bug;
+
 // Player Class
 var Player = function(row, col, image) {
     Dynamic.call(this, row, col, image);
@@ -205,21 +232,25 @@ var Player = function(row, col, image) {
     this.startX = this.x;
     this.startY = this.y;
 
+    this.points = 0;
+
     this.lives = 5;
-    this.keys = 0;
+    this.keyItems = 0;
     this.stars = 0;
     this.gems = {
         blue: 0,
         orange: 0,
         green: 0
     };
+
+    this.starCount = 0;
+    this.currentLevel = 1; // start from level 1
 };
 
-// Player extends Moveable class
 Player.prototype = Object.create(Dynamic.prototype);
 Player.prototype.constructor = Player;
 
-// Subtracts life - 1 and resets player to starting position
+// Subtracts life by 1 and resets player to starting position
 Player.prototype.die = function() {
     this.x = this.startX;
     this.y = this.startY;
@@ -239,17 +270,12 @@ Player.prototype.update = function() {
             this.die();
         }
     }
-    // Collect gem
-    l = allGems.length;
+
+    // Collect intersected items
+    l = allItems.length;
     for(var i = 0; i < l; i++) {
-        if (this.intersects(allGems[i]) && allGems[i].isAvailable) {
-            switch (allGems[i].color) {
-                case 1: this.gems.blue++; break;
-                case 2: this.gems.orange++; break;
-                case 3: this.gems.green++; break;
-            }
-            // make gem unavailable when collected
-            allGems[i].isAvailable = false;
+        if (this.intersects(allItems[i]) && allItems[i].isAvailable) {
+            this.handleItem(allItems[i]);
         }
     }
     // If player is on top of canvas, check if he is standing a selector
@@ -262,10 +288,6 @@ Player.prototype.update = function() {
         for(var i = 0; i < l; i++) {
             if (this.intersects(allSelectors[i])) {
                 isOnSelector = true; // player is in safe zone
-                if (allSelectors[i].isAvailable) {
-                    this.lives++;
-                    allSelectors[i].isAvailable = false;
-                }
             }
         }
         // Kill player if not on safe zone
@@ -275,61 +297,165 @@ Player.prototype.update = function() {
     }
 };
 
+// This method recevies an item and updates player stats accordingly
+Player.prototype.handleItem = function(item) {
+
+    // Check what type of item and update player stats
+    if (item instanceof Gem) {
+
+        switch (item.color) {
+            case 1: this.gems.orange++; break;
+            case 2: this.gems.green++; break;
+            case 3: this.gems.blue++; break;
+            default:
+                console.log('This gem doesn\'t exist');
+        }
+
+    } else if (item instanceof Star) {
+
+        // If item is a star check if user collected all stars in current level
+        if (++this.stars == this.starCount) {
+            // Find the key on allItems and make it visiable on map
+            for(var i = 0; i < allItems.length; i++) {
+                if (allItems[i] instanceof Key) {
+                    allItems[i].isAvailable = true;
+                    break; // there should only be one key per level
+                }
+            }
+        }
+    } else if(item instanceof Key) { // If user collected a key, advance to next level!
+        this.keyItems++;
+        //this.stars = 0; // reset player's starCount
+        gameLevel(++this.currentLevel); // next level!
+
+    }
+    this.points += item.points;
+    // once collected make item unavailable
+    item.isAvailable = false;
+
+}
+
 // Gets called when player releases a valid key
 Player.prototype.handleInput = function(keyCode) {
 
     switch (keyCode) {
         case 'left':
-            if (this.x > 0)
+            if (this.x > 0 && this.isObstacleFree(-101, 0))
                 this.x -= 101;
             break;
         case 'right':
-            if (this.x < 404)
+            if (this.x < 404 && this.isObstacleFree(101, 0))
                 this.x += 101;
             break;
         case 'up':
-            if (this.y > 0)
+            if (this.y > 0 && this.isObstacleFree(0, -83))
                 this.y -= 83;
             break;
         case 'down':
-            if (this.y < 332)
-                this.y += Const.grid.HEIGHT;
+            if (this.y < 332 && this.isObstacleFree(0, 83))
+                this.y += 83;
             break;
     }
 
 };
 
-// Create player at Row: 5 Col: 2
-var player = new Player(5, 2, Const.player.BOY);
+Player.prototype.isObstacleFree = function(dx,dy) {
 
-// Create Enemies
-var allEnemies = [];
-var allSelectors = [];
-var allGems = [];
+    for (var i = 0; i < allObstacles.length; i++) {
+        if (this.y + dy < allObstacles[i].y + allObstacles[i].heightBounds  &&
+            this.y + dy + this.heightBounds > allObstacles[i].y &&
+            this.x + dx < allObstacles[i].x + allObstacles[i].widthBounds   &&
+            this.x + dx + this.widthBounds > allObstacles[i].x) {
+            return false;
+        }
+    }
+    return true;
+};
 
 function gameLevel(level) {
+
     // All game levels
     switch (level) {
         case 1:
             allEnemies = [
-                new Enemy(1, -1, Const.enemy.BUG, 2),
-                new Enemy(2, -3, Const.enemy.BUG, 3),
-                new Enemy(3, -1, Const.enemy.BUG, 1),
-                new Enemy(3, -4, Const.enemy.BUG, 1),
+                new Bug(1, -1, 2), new Bug(2, -3, 2),
+                new Bug(3, -1, 1),
             ];
-            allSelectors = [0,1,2,3,4];
-            allGems = [
-                new Gem(1, 1, 'blue'),
-                new Gem(2, 2, 'orange'),
-                new Gem(3, 3, 'green')
+            allItems = [
+                new Gem(1, 0, 'blue'), new Gem(2, 2, 'green'),
+                new Gem(1, 4, 'blue'), new Star(0,2),
+                new Key(5,0)
+            ];
+            allSelectors = [
+                new Selector(0, 2),
+            ];
+            allObstacles = [
+                new Rock(4,2)
+            ];
+            break;
+        case 2:
+            allEnemies = [
+                new Bug(1, -1, 2), new Bug(2, -3, 3),
+                new Bug(3, -1, 1), new Bug(3, -3, 1),
+            ];
+            allItems = [
+                new Gem(1, 0, 'green'), new Gem(2, 2, 'orange'),
+                new Gem(1, 4, 'green'), new Gem(3, 0, 'blue'),
+                new Gem(3, 4, 'blue'), new Star(0,1),
+                new Star(0,3), new Key(5,0)
+            ];
+            allSelectors = [
+                new Selector(0, 1), new Selector(0, 3)
+            ];
+            allObstacles = [
+                new Rock(2,0), new Rock(2,1),
+                new Rock(2,3), new Rock(2,4)
+            ]
+            break;
+        case 3:
+            allEnemies = [
+                new Bug(1, -1, 2), new Bug(2, -3, 3),
+                new Bug(3, -1, 1), new Bug(3, -3, 1),
+            ];
+            allItems = [
+                new Gem(1, 0, 'orange'), new Gem(2, 0, 'orange'),
+                new Gem(2, 4, 'orange'), new Gem(1, 4, 'orange'),
+                new Gem(3, 0, 'orange'), new Gem(3, 4, 'orange'),
+                new Star(0,0), new Star(0,2), new Star(0,4),
+                new Star(2,2), new Key(5,0)
             ];
             allSelectors = [
                 new Selector(0, 0),
                 new Selector(0, 2),
                 new Selector(0, 4)
             ];
+            allObstacles = [];
+            break;
+        default:
+        //wonGame();
     }
+
+    // Get the number of stars on current game level
+    var starCount = 0;
+    for(var i = 0; i < allItems.length; i++) {
+        if (allItems[i] instanceof Star) {
+            starCount++;
+        }
+    }
+
+    // Number of stars required to reveal key
+    player.starCount += starCount;
+
 }
+
+// Create player at Row: 5 Col: 2
+var player = new Player(5, 2, Const.player.BOY);
+
+// Create Enemies
+var allEnemies = [];
+var allItems = [];
+var allSelectors = [];
+var allObstacles = [];
 gameLevel(1);
 
 
