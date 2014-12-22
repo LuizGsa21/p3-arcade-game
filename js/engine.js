@@ -150,7 +150,7 @@ var Engine = (function(global) {
 
 
         /**
-         * Draws the player's lives left (Hearts)
+         * Draws the player's health (hearts on top of the canvas)
          */
         for (var i = 0; i < player.lives; i++) {
             ctx.drawImage(Resources.get(Const.misc.HEART), 30 * i, 0, 30,50);
@@ -179,9 +179,6 @@ var Engine = (function(global) {
          */
         allEnemies.forEach(function(enemy) {
             enemy.render();
-            if (enemy.x > 404) {
-                ctx.putImageData(blankGridImg, 505, enemy.y + 77);
-            }
         });
 
         player.render();
@@ -197,7 +194,6 @@ var Engine = (function(global) {
 
     // This blankImage will be used to erase the canvas.
     var blankImg = ctx.createImageData(canvas.width, canvas.height);
-    var blankGridImg = ctx.createImageData(Const.grid.WIDTH, Const.grid.HEIGHT);
 
     /* Go ahead and load all of the images we know we're going to need to
      * draw our game level. Then set init as the callback method, so that when

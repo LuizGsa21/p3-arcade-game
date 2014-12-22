@@ -62,7 +62,15 @@ var Moveable = function(rowPosition, colPosition, image, widthBounds, heightBoun
 
 // Draws the object on screen
 Moveable.prototype.render = function() {
-    ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
+
+    // Crop the image if it passes right bounds
+    if (this.x > 404) {
+        var width = 505 - this.x;
+        ctx.drawImage(Resources.get(this.sprite), 0,0, width, 171, this.x, this.y, width, 171);
+    } else {
+        ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
+
+    }
 };
 
 // Checks to see if current object collides with given object
