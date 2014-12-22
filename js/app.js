@@ -162,11 +162,11 @@ Player.prototype.handleInput = function(keyCode) {
                 this.x -= Const.grid.WIDTH;
             break;
         case 'right':
-            if (this.x < ctx.canvas.width - Const.grid.WIDTH)
+            if (this.x < 404)
                 this.x += Const.grid.WIDTH;
             break;
         case 'up':
-            if (this.y > Const.grid.HEIGHT)
+            if (this.y > 0)
                 this.y -= Const.grid.HEIGHT;
             break;
         case 'down':
