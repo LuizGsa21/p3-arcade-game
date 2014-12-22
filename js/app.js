@@ -154,11 +154,31 @@ Player.prototype.update = function() {
     for(var i = 0; i < l; i++) {
         if (this.intersects(allGems[i]) && allGems[i].isAvailable) {
             switch (allGems[i].color) {
-                case 1: this.gems.blue += 1; break;
-                case 2: this.gems.orange += 1; break;
-                case 3: this.gems.green += 1; break;
+                case 1: this.gems.blue++; break;
+                case 2: this.gems.orange++; break;
+                case 3: this.gems.green++; break;
             }
             allGems[i].isAvailable = false;
+        }
+    }
+    // If player is on top of canvas, check he is standing a selector
+    if (this.y < 0) {
+        l = allSelectors.length;
+        // Assume he is standing on a dead zone
+        var isOnSelector = false;
+        // check all selectors
+        for(var i = 0; i < l; i++) {
+            if (this.intersects(allSelectors[i])) {
+                isOnSelector = true; // player is in safe zone
+                if (allSelectors[i].isAvailable) {
+                    this.lives++;
+                    allSelectors[i].isAvailable = false;
+                }
+            }
+        }
+        // Kill player if not on safe zone
+        if (!isOnSelector) {
+            this.die();
         }
     }
 };
@@ -206,8 +226,7 @@ Gem.prototype.render = function() {
 
 var Selector = function(rowPosition, colPosition) {
     Moveable.call(this, rowPosition, colPosition, Const.misc.SELECTOR);
-    console.log(this.x);
-    console.log(this.y);
+    this.isAvailable = true;
 }
 
 Selector.prototype = Object.create(Moveable.prototype);
@@ -221,9 +240,6 @@ var player = new Player(5, 2, Const.player.BOY);
 var allEnemies = [];
 var allSelectors = [];
 var allGems = [];
-//var allOrangeGems = [];
-//var allBlueGems = [];
-//var allgreenGems = [];
 
 function gameLevel(level) {
     // All game levels
@@ -239,7 +255,7 @@ function gameLevel(level) {
             allGems = [
                 new Gem(1, 1, Const.gems.BLUE),
                 new Gem(2, 2, Const.gems.ORANGE),
-                new Gem(3, 3, Const.gems.GREEN),
+                new Gem(3, 3, Const.gems.GREEN)
             ];
             allSelectors = [
                 new Selector(0, 0),
