@@ -38,118 +38,208 @@ var Const = {
 };
 
 /**
- * Creates a moveable object.
- * All moveable objects should implement this class.
+ * Static Class
+ * All objects that are static implement this class.
+ * Static objects are objects that do not move once placed on canvas
+ * Examples: Gems, Stars, Keys, Selectors
  * Parameters:
- *  rowPosition - Row position starting at 0 from top-down.
- *  colPosition - Column position starting at 0 from left-to-right
- *  widthBounds - imaginary rectangle width, used to detect collision
- *  heightBounds - imaginary rectangle height, used to detect collision
+ *  row - Row position starting at 0 from top-down.
+ *  col - Column position starting at 0 from left-to-right
+ *  image - The objects image
  */
-var Moveable = function(rowPosition, colPosition, image) {
-    this.x = colPosition * Const.grid.WIDTH;
-    this.y = (rowPosition * Const.grid.HEIGHT) - 41.5; // subtracting 41.5 to center object on grid
+var Static = function(row, col, image) {
+    this.x = col * Const.grid.WIDTH;
+    this.y = (row * Const.grid.HEIGHT) - 41.5; // subtracting 41.5 to center object on grid
 
     // The image/sprite will be drawn on screen when render() is called
     this.sprite = image;
 
     // set default width/height bounds
-    // Why not use the grid's default width?
+    // Why not use the grid or the image's default width?
     //  Because the collisions seem to happen too early.
     this.widthBounds = 80;
-    this.heightBounds = Const.grid.HEIGHT;
+    this.heightBounds = 83;
 };
 
 // Draws the object on screen
-Moveable.prototype.render = function() {
+Static.prototype.render = function() {
+    ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
+};
+// --------- END of Static class
 
-    // Crop the image if it passes right bounds
-    if (this.x > 404) {
+/**
+ * Gem Class
+ * @param row
+ * @param col
+ * @param color
+ * @param dX
+ * @param dY
+ * @param height
+ * @param width
+ * @constructor
+ */
+var Gem = function(row,col, color, dX, dY, height, width) {
+
+    // Should be set to false when player collects this gem
+    this.isAvailable = true;
+    // Custom gem settings, use default if not specified
+    this.height = height || 85;
+    this.width = width || 50;
+    this.dX = dX || 25;
+    this.dY = dY || 70;
+
+    // Get image path
+    // If color is not valid, set gem color to blue
+    var image;
+    switch (color) {
+        case 'orange':
+            this.points = 15;
+            this.color = 1;
+            image = 'images/gem-orange.png';
+            break;
+        case 'green':
+            this.points = 10;
+            this.color = 2;
+            image = 'images/gem-green.png';
+            break;
+        default:
+            this.points = 5;
+            this.color = 3;
+            image = 'images/gem-blue.png';
+            break;
+    }
+    // Set x, y coordinates and sprite image
+    Static.call(this, row, col, image);
+};
+
+// Draws the object on screen
+Gem.prototype.render = function() {
+    // resize image and fix offset, then draw image on canvas
+    ctx.drawImage(Resources.get(this.sprite), this.x + this.dX, this.y + this.dY, this.width,this.height);
+};
+// --------- END of Gem class
+
+// Key class
+var Key = function(row,col) {
+    Static.call(this, row, col, 'images/Key.png');
+    this.isAvailable = true;
+    this.points = 25;
+};
+
+Key.prototype = Object.create(Static.prototype);
+Key.prototype.constructor = Key;
+
+
+// Selector Class
+var Selector = function(rowPosition, colPosition) {
+    // Set x, y coordinates and sprite image
+    Static.call(this, rowPosition, colPosition, 'images/Selector.png');
+    // Should be set to false when player collects this gem
+    this.isAvailable = true;
+};
+
+Selector.prototype = Object.create(Static.prototype);
+Selector.constructor = Selector;
+
+
+/**
+ * Dynamic Class
+ * All objects that are dynamic implement this class.
+ * Dynamic objects are objects that move per frame on canvas
+ * Examples: Player, Enemies
+ * Parameters:
+ *  row - Row position starting at 0 from top-down.
+ *  col - Column position starting at 0 from left-to-right
+ *  image - The objects image
+ */
+var Dynamic = function (row, col, image) {
+    Static.call(this, row, col, image);
+}
+
+// Draws the object on screen
+Dynamic.prototype.render = function() {
+    if (this.x < 404) {
+        ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
+    } else {
+        // Crop the image if it passes right bounds
         var width = 505 - this.x;
         ctx.drawImage(Resources.get(this.sprite), 0,0, width, 171, this.x, this.y, width, 171);
-    } else {
-        ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
     }
 };
 
 // Checks to see if current object collides with given object
-Moveable.prototype.intersects = function (obj) {
-    // Treat both objects as a rectangle.
+Dynamic.prototype.intersects = function (obj) {
+    // Treat both objects as rectangles.
     // A collision happens when the two rectangles intersect
     return (this.y < obj.y + obj.heightBounds  &&
-            this.y + this.heightBounds > obj.y &&
-            this.x < obj.x + obj.widthBounds   &&
-            this.x + this.widthBounds > obj.x);
+    this.y + this.heightBounds > obj.y &&
+    this.x < obj.x + obj.widthBounds   &&
+    this.x + this.widthBounds > obj.x);
 };
+// --------- END of Dynamic class
 
 // Enemies our player must avoid
-var Enemy = function(rowPosition, colPosition, image, speed) {
-    Moveable.call(this, rowPosition, colPosition, image);
-    this.speed = speed; //  Enemy's speed is multiplied by deltaTime * SPEED_FACTOR
-
-    // The image/sprite for our enemies, this uses
-    // a helper we've provided to easily load images
-    this.sprite = image;
+var Enemy = function(row, col, image, speed) {
+    Dynamic.call(this, row, col, image);
+    this.speed = speed * 100;
 };
 
-// Enemy extends Moveable class
-Enemy.prototype = Object.create(Moveable.prototype);
-
-// Recover Enemy's constructor
+Enemy.prototype = Object.create(Dynamic.prototype);
 Enemy.prototype.constructor = Enemy;
 
 // Update the enemy's position
 // Parameter: dt, a time delta between ticks
 Enemy.prototype.update = function(dt) {
-    if (this.x > Const.grid.WIDTH * 5) {
+    if (this.x > 505) {
         this.x = -101;
     } else {
-        this.x += dt * Const.SPEED_FACTOR * this.speed;
+        this.x += dt * this.speed;
     }
 };
 
 // Player Class
-var Player = function(rowPosition, colPosition, image) {
-    Moveable.call(this, rowPosition, colPosition, image);
+var Player = function(row, col, image) {
+    Dynamic.call(this, row, col, image);
 
     // startX and startY will be the player's respawn position
     this.startX = this.x;
     this.startY = this.y;
 
+    this.lives = 5;
+    this.keys = 0;
+    this.stars = 0;
     this.gems = {
         blue: 0,
         orange: 0,
         green: 0
     };
-    this.keys = 0;
-
-    this.lives = 5;
 };
 
 // Player extends Moveable class
-Player.prototype = Object.create(Moveable.prototype);
-
-// Recover Player's constructor
+Player.prototype = Object.create(Dynamic.prototype);
 Player.prototype.constructor = Player;
 
-// resets player to starting position
+// Subtracts life - 1 and resets player to starting position
 Player.prototype.die = function() {
     this.x = this.startX;
     this.y = this.startY;
     this.lives--;
-    if (this.lives < 0) {
+    if (this.lives <= 0) {
         //gameOver();
     }
 };
 
-// Checks if player intersects enemy
+// Checks if player intersects a game object
 Player.prototype.update = function() {
+
+    // Kill player if toon intersects with an enemy
     var l = allEnemies.length;
     for(var i = 0; i < l; i++) {
         if (this.intersects(allEnemies[i])) {
             this.die();
         }
     }
+    // Collect gem
     l = allGems.length;
     for(var i = 0; i < l; i++) {
         if (this.intersects(allGems[i]) && allGems[i].isAvailable) {
@@ -158,10 +248,12 @@ Player.prototype.update = function() {
                 case 2: this.gems.orange++; break;
                 case 3: this.gems.green++; break;
             }
+            // make gem unavailable when collected
             allGems[i].isAvailable = false;
         }
     }
-    // If player is on top of canvas, check he is standing a selector
+    // If player is on top of canvas, check if he is standing a selector
+    // Kill player if he is standing on water terrain
     if (this.y < 0) {
         l = allSelectors.length;
         // Assume he is standing on a dead zone
@@ -189,49 +281,23 @@ Player.prototype.handleInput = function(keyCode) {
     switch (keyCode) {
         case 'left':
             if (this.x > 0)
-                this.x -= Const.grid.WIDTH;
+                this.x -= 101;
             break;
         case 'right':
             if (this.x < 404)
-                this.x += Const.grid.WIDTH;
+                this.x += 101;
             break;
         case 'up':
             if (this.y > 0)
-                this.y -= Const.grid.HEIGHT;
+                this.y -= 83;
             break;
         case 'down':
-            if (this.y < ctx.canvas.height - 303)
+            if (this.y < 332)
                 this.y += Const.grid.HEIGHT;
             break;
     }
 
 };
-
-var Gem = function(rowPosition, colPosition, image) {
-    Moveable.call(this, rowPosition, colPosition, image);
-    this.color;
-    switch (image) {
-        case Const.gems.BLUE: this.color = 1; break;
-        case Const.gems.ORANGE: this.color = 2; break;
-        case Const.gems.GREEN: this.color = 3; break;
-        default:
-            this.color = 0;
-    }
-    this.isAvailable = true;
-}
-
-Gem.prototype.render = function() {
-    ctx.drawImage(Resources.get(this.sprite), this.x + 25, this.y + 70, 50,85);
-}
-
-var Selector = function(rowPosition, colPosition) {
-    Moveable.call(this, rowPosition, colPosition, Const.misc.SELECTOR);
-    this.isAvailable = true;
-}
-
-Selector.prototype = Object.create(Moveable.prototype);
-Selector.constructor = Selector;
-
 
 // Create player at Row: 5 Col: 2
 var player = new Player(5, 2, Const.player.BOY);
@@ -246,16 +312,16 @@ function gameLevel(level) {
     switch (level) {
         case 1:
             allEnemies = [
-                //new Enemy(1, -1, Const.enemy.BUG, 2),
-                //new Enemy(2, -3, Const.enemy.BUG, 3),
-                //new Enemy(3, -1, Const.enemy.BUG, 1),
-                //new Enemy(3, -4, Const.enemy.BUG, 1),
+                new Enemy(1, -1, Const.enemy.BUG, 2),
+                new Enemy(2, -3, Const.enemy.BUG, 3),
+                new Enemy(3, -1, Const.enemy.BUG, 1),
+                new Enemy(3, -4, Const.enemy.BUG, 1),
             ];
             allSelectors = [0,1,2,3,4];
             allGems = [
-                new Gem(1, 1, Const.gems.BLUE),
-                new Gem(2, 2, Const.gems.ORANGE),
-                new Gem(3, 3, Const.gems.GREEN)
+                new Gem(1, 1, 'blue'),
+                new Gem(2, 2, 'orange'),
+                new Gem(3, 3, 'green')
             ];
             allSelectors = [
                 new Selector(0, 0),
