@@ -10,7 +10,7 @@ var Const = {
     enemy : {
         BUG : 'images/enemy-bug.png'
     },
-    gem : {
+    gems : {
         BLUE : 'images/gem-blue.png',
         GREEN : 'images/gem-green.png',
         ORANGE : 'images/gem-orange.png'
@@ -73,7 +73,7 @@ Moveable.prototype.intersects = function (obj) {
             this.y + this.heightBounds > obj.y &&
             this.x < obj.x + obj.widthBounds   &&
             this.x + this.widthBounds > obj.x);
-}
+};
 
 // Enemies our player must avoid
 var Enemy = function(rowPosition, colPosition, image, speed) {
@@ -108,6 +108,13 @@ var Player = function(rowPosition, colPosition, image) {
     // startX and startY will be the player's respawn position
     this.startX = this.x;
     this.startY = this.y;
+
+    this.gems = {
+        blue: 0,
+        orange: 0,
+        green: 0
+    };
+    this.keys = 0;
 
     this.lives = 5;
 };

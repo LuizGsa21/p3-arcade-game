@@ -141,14 +141,32 @@ var Engine = (function(global) {
             }
         }
 
+        renderEntities();
+
+        playerInfo();
+    }
+
+    function playerInfo() {
+
+
         /**
-         * Draws the players lives left (Hearts)
+         * Draws the player's lives left (Hearts)
          */
         for (var i = 0; i < player.lives; i++) {
-            ctx.drawImage(Resources.get(Const.misc.HEART), 50 * i, 0, 50,50);
+            ctx.drawImage(Resources.get(Const.misc.HEART), 30 * i, 0, 30,50);
         }
 
-        renderEntities();
+        // Draws player key stats
+        ctx.drawImage(Resources.get(Const.misc.KEY), 516, 50, 40, 68);
+        ctx.fillText('x' + player.keys, 546, 105);
+
+
+        // Draws player gem stats
+        for (var i = 0; i < gems.length; i++) {
+            ctx.drawImage(Resources.get(gems[i]), 516, 100 + (i * 40), 30, 51);
+            ctx.fillText('x' + player.gems[playerGems[i]], 546, 140 + (i * 40));
+        }
+
     }
 
     /* This function is called by the render function and is called on each game
@@ -161,8 +179,8 @@ var Engine = (function(global) {
          */
         allEnemies.forEach(function(enemy) {
             enemy.render();
-            if (enemy.x > Const.grid.WIDTH * 4) {
-                ctx.putImageData(blankGridImg, Const.grid.WIDTH * 5, enemy.y + 77);
+            if (enemy.x > 404) {
+                ctx.putImageData(blankGridImg, 505, enemy.y + 77);
             }
         });
 
@@ -192,9 +210,10 @@ var Engine = (function(global) {
         Const.enemy.BUG,
         Const.player.BOY,
         Const.misc.HEART,
-        Const.gem.BLUE,
-        Const.gem.GREEN,
-        Const.gem.ORANGE,
+        Const.gems.BLUE,
+        Const.gems.GREEN,
+        Const.gems.ORANGE,
+        Const.misc.KEY
     ]);
     Resources.onReady(init);
 
@@ -203,4 +222,16 @@ var Engine = (function(global) {
      * from within their app.js files.
      */
     global.ctx = ctx;
+
+    var gems = Object.keys(Const.gems);
+
+    ctx.font = '12pt Calibri';
+
+    var gems = [
+        Const.gems.BLUE,
+        Const.gems.ORANGE,
+        Const.gems.GREEN,
+    ];
+    var playerGems = Object.keys(player.gems);
+
 })(this);
