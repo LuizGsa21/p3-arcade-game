@@ -1,9 +1,12 @@
+'use strict';
 var audioDie = new Audio('audio/die.wav');
 var audioCollect = new Audio('audio/collect_gem.wav');
 var audioGameOver = new Audio('audio/gameover.wav');
 var audioClearLevel = new Audio('audio/clear_level.wav');
 var audioStar = new Audio('audio/star.wav');
 var audioTheme = new Audio('audio/theme.mp3');
+audioTheme.loop = true;
+audioTheme.play();
 
 // Constant object used for convenience
 var Const = {
@@ -46,46 +49,75 @@ var Const = {
 };
 
 /**
- * Static Class
- * All objects that are static implement this class.
- * Static objects are objects that do not move once placed on canvas
- * Examples: Gems, Stars, Keys, Selectors
- * Parameters:
- *  row - Row position starting at 0 from top-down.
- *  col - Column position starting at 0 from left-to-right
- *  image - The objects image
+ * GameObject class
+ * Creates a GameObject object on the specified row and column
+ * @param {number} row Row position starting at 0 from top-to-down
+ * @param {number} col Column position starting at 0 from left-to-right
+ * @param {string} imagePath Image path
+ * @constructor
  */
-var Static = function (row, col, image) {
+var GameObject = function(row, col, imagePath) {
     this.x = col * Const.grid.WIDTH;
     this.y = (row * Const.grid.HEIGHT) - 41.5; // subtracting 41.5 to center object on grid
 
-    // The image/sprite will be drawn on screen when render() is called
-    this.sprite = image;
-
     // set default width/height bounds
     // Why not use the grid or the image's default width?
-    //  Because the collisions seem to happen too early.
+    // Because the collisions seem to happen too early.
     this.widthBounds = 80;
     this.heightBounds = 83;
+
+    // The image/sprite will be drawn on screen when render() is called
+    this.sprite = imagePath;
+};
+/**
+ * StaticGameObject class
+ * All objects that are static inherit this class.
+ * StaticGameObject objects are objects that do not move once placed on canvas
+ * Examples: Gem, Star, Key
+ * @param {number} row Row position starting at 0 from top-to-down
+ * @param {number} col Column position starting at 0 from left-to-right
+ * @param {string} imagePath Image path
+ * @constructor
+ * @extends {GameObject}
+ */
+var StaticGameObject = function (row, col, imagePath) {
+    // Set the x and y coordinate
+    GameObject.call(this, row, col, imagePath);
 };
 
-// Draws the object on screen
-Static.prototype.render = function () {
+/** Draws the object on canvas */
+StaticGameObject.prototype.render = function () {
     ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
 };
-// --------- END of Static class
 
-var Item = function (row, col, image, isAvailable, audio) {
-    Static.call(this, row, col, image);
-    // Should be set to false when player collects this item
-    // With the exception of keys (keys should only be available after all stars are collected)
+/**
+ * Item class
+ * All items should inherit this class.
+ * It provides the item with the ability of being collectable
+ * and playing its unique sound by calling playSound()
+ * @param {number} row Row position starting at 0 from top-to-down
+ * @param {number} col Column position starting at 0 from left-to-right
+ * @param {string} imagePath Image path
+ * @param {boolean} isAvailable Item should be not display on canvas when isAvailable == false (Usually set to false after being collected)
+ * @param {number} number of points the player will get when the item is collected
+ * @param {Object} audio
+ * @constructor
+ * @extends {StaticGameObject}
+ */
+var Item = function (row, col, image, isAvailable, points, audio) {
+    StaticGameObject.call(this, row, col, image);
     this.audio = audio;
     this.isAvailable = isAvailable;
+    this.points = points;
 };
 
-Item.prototype = Object.create(Static.prototype);
+/** Delagate with StaticGameObject.prototype */
+Item.prototype = Object.create(StaticGameObject.prototype);
+
+/** Reclaim Gem constructor */
 Item.prototype.constructor = Item;
 
+/** Plays the item's sound  */
 Item.prototype.playSound = function () {
     this.audio.currentTime = 0;
     this.audio.play();
@@ -93,118 +125,174 @@ Item.prototype.playSound = function () {
 
 /**
  * Gem Class
- * @param row
- * @param col
- * @param color
- * @param dX
- * @param dY
- * @param height
- * @param width
+ * Creates a Gem on with specified position and color.
+ * Colors:
+ *   blue = 5 points
+ *   green = 10 points
+ *   orange = 15 points
+ * @param {number} row Row position starting at 0 from top-to-down.
+ * @param {number} col Column position starting at 0 from left-to-right.
+ * @param {string} color Gem's color, lowercase string value orange, green, or blue.
+ *   Gem's color will be set to blue on invalid input.
  * @constructor
+ * @extends {Item}
  */
 var Gem = function (row, col, color) {
 
-    // Should be set to false when player collects this gem
-    this.isAvailable = true;
-
-    // Get image path
-    // If color is not valid, set gem color to blue
+    // Get the specified color and point value, if there's no match set color to blue
     var image;
+    var points;
     switch (color) {
         case 'orange':
-            this.points = 15;
-            this.color = 1;
+            points = 15; // the amount of points the player gets when the gem is collected
+            this.color = 1; // Gem color value, used to indicate type of gem. Comparing a number is faster than comparing a string.
             image = 'images/gem-orange.png';
             break;
         case 'green':
-            this.points = 10;
+            points = 10;
             this.color = 2;
             image = 'images/gem-green.png';
             break;
         default:
-            this.points = 5;
+            points = 5;
             this.color = 3;
             image = 'images/gem-blue.png';
             break;
     }
     // Set x, y coordinates and sprite image and item availability
-    Item.call(this, row, col, image, true, audioCollect);
+    Item.call(this, row, col, image, true, points, audioCollect);
 };
 
+/** Delagate with Item.prototype */
 Gem.prototype = Object.create(Item.prototype);
+
+/** Reclaim Gem constructor */
 Gem.prototype.constructor = Gem;
 
-// Draws the object on screen
+/**
+ * Draws the gem on canvas.
+ * @override
+ */
 Gem.prototype.render = function () {
-    // resize image and fix offset, then draw image on canvas
+    // Fix offset and resize image, then draw image on canvas
     ctx.drawImage(Resources.get(this.sprite), this.x + 25, this.y + 70, 50, 85);
 };
-// --------- END of Gem class
 
-// Key class
+/**
+ * Key class
+ * Creates a Key on the specified position.
+ * Key's isAvailable default value is false.
+ * Keys should only become available after player collects all the stars on the current game level.
+ * @param {number} row Row position starting at 0 from top-to-down.
+ * @param {number} col Column position starting at 0 from left-to-right.
+ * @constructor
+ * @extends {Item}
+ */
 var Key = function (row, col) {
-    Item.call(this, row, col, 'images/Key.png', false, audioClearLevel);
-    this.points = 25;
+    Item.call(this, row, col, 'images/Key.png', false, 25, audioClearLevel);
 };
 
+/** Delgate with Item.prototype */
 Key.prototype = Object.create(Item.prototype);
+
+/** Reclaim Key constructor */
 Key.prototype.constructor = Key;
 
+/**
+ * Star class
+ * Creates a Star on the specified position.
+ * @param {number} row Row position starting at 0 from top-to-down
+ * @param {number} col Column position starting at 0 from left-to-right
+ * @constructor
+ * @extends {Item}
+ */
 var Star = function (row, col) {
-    Item.call(this, row, col, 'images/Star.png', true, audioStar);
-    this.life = 1;
-    this.points = 25;
+    Item.call(this, row, col, 'images/Star.png', true, 25, audioStar);
 };
 
+/** Delgate with Item.prototype */
 Star.prototype = Object.create(Item.prototype);
+
+/** Reclaim Star constructor */
 Star.prototype.constructor = Star;
 
-// Selector Class
+/**
+ * Selector Class
+ * Creates a selector on the specified position.
+ * Selectors are used as terrain and prevents the player from drowning if standing on water.
+ * @param {number} row Row position starting at 0 from top-to-down
+ * @param {number} col Column position starting at 0 from left-to-right
+ * @constructor
+ * @extends {StaticGameObject}
+ */
 var Selector = function (row, col) {
     // Set x, y coordinates and sprite image
-    Static.call(this, row, col, 'images/Selector.png');
+    StaticGameObject.call(this, row, col, 'images/Selector.png');
 };
 
-Selector.prototype = Object.create(Static.prototype);
-Selector.constructor = Selector;
+/** Delgate with StaticGameObject.prototype */
+Selector.prototype = Object.create(StaticGameObject.prototype);
 
+/** Reclaim Select constructor */
+Selector.prototype.constructor = Selector;
+
+/**
+ * Rock Class
+ * Creates a rock on the specified position.
+ * Since a player cannot pass through rocks, they are great for creating obstacles.
+ * @param {number} row Row position starting at 0 from top-to-down
+ * @param {number} col Column position starting at 0 from left-to-right
+ * @constructor
+ * @extends {StaticGameObject}
+ */
 var Rock = function (row, col) {
-    Static.call(this, row, col, 'images/Rock.png');
+    StaticGameObject.call(this, row, col, 'images/Rock.png');
 };
 
-Rock.prototype = Object.create(Static.prototype);
-Rock.constructor = Rock;
+/** Delgate with StaticGameObject.prototype */
+Rock.prototype = Object.create(StaticGameObject.prototype);
+
+/** Reclaim Rock constructor */
+Rock.prototype.constructor = Rock;
 
 
 /**
- * Dynamic Class
- * All objects that are dynamic implement this class.
- * Dynamic objects are objects that move per frame on canvas
+ * DynamicGameObject Class
+ * All game objects that move after being placed on canvas should inherit this class.
  * Examples: Player, Enemies
- * Parameters:
- *  row - Row position starting at 0 from top-down.
- *  col - Column position starting at 0 from left-to-right
- *  image - The objects image
+ * @param {number} row Row position starting at 0 from top-to-down
+ * @param {number} col Column position starting at 0 from left-to-right
+ * @param {string} imagePath Image path
+ * @constructor
+ * @extends {GameObject}
  */
-var Dynamic = function (row, col, image) {
-    Static.call(this, row, col, image);
+var DynamicGameObject = function (row, col, ImagePath) {
+    GameObject.call(this, row, col, ImagePath);
 };
 
-// Draws the object on screen
-Dynamic.prototype.render = function () {
+/** Draws the object on canvas */
+DynamicGameObject.prototype.render = function () {
+
+    // If object isn't near the right side boundaries draw the entire image
     if (this.x < 404) {
+
         ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
+
     } else {
         // Crop the image if it passes right bounds
         var width = 505 - this.x;
-        if (width > 0) { // this check prevents firefox from crashing the game
+        if (width > 0) { // checking width > 0 prevents firefox from crashing the game
             ctx.drawImage(Resources.get(this.sprite), 0, 0, width, 171, this.x, this.y, width, 171);
         }
     }
 };
 
-// Checks to see if current object collides with given object
-Dynamic.prototype.intersects = function (obj) {
+/**
+ * Checks if this object collides with the given object
+ * @param {GameObject} obj given object
+ * @returns {boolean} returns true if object collides with given object
+ */
+DynamicGameObject.prototype.intersects = function (obj) {
     // Treat both objects as rectangles.
     // A collision happens when the two rectangles intersect
     return (this.y < obj.y + obj.heightBounds &&
@@ -212,20 +300,32 @@ Dynamic.prototype.intersects = function (obj) {
     this.x < obj.x + obj.widthBounds &&
     this.x + this.widthBounds > obj.x);
 };
-// --------- END of Dynamic class
 
-// Enemies our player must avoid
-var Enemy = function (row, col, image, speed) {
-    Dynamic.call(this, row, col, image);
+/**
+ * Enemy class
+ * Create an enemy
+ * @param {number} row Row position starting at 0 from top-to-down
+ * @param {number} col Column position starting at 0 from left-to-right
+ * @param {string} imagePath Image path
+ * @param {number} speed how fast the enemy should move. Formula used: currentX + (deltaTime * speed * 100)
+ * @constructor
+ * @extends {DynamicGameObject}
+ */
+var Enemy = function (row, col, imagePath, speed) {
+    DynamicGameObject.call(this, row, col, imagePath);
     this.speed = speed * 100;
 };
 
-Enemy.prototype = Object.create(Dynamic.prototype);
+/** Delgate with DynamicGameObject.prototype */
+Enemy.prototype = Object.create(DynamicGameObject.prototype);
+
+/** Reclaim Enemy constructor */
 Enemy.prototype.constructor = Enemy;
 
-// Update the enemy's position
-// Parameter: dt, a time delta between ticks
+/** Updates the enemy's position. */
 Enemy.prototype.update = function (dt) {
+
+    // if the enemy reached the right boundaries, reset its position
     if (this.x > 505) {
         this.x = -101;
     } else {
@@ -233,55 +333,95 @@ Enemy.prototype.update = function (dt) {
     }
 };
 
+/**
+ * Creates an Enemy Bug
+ * @param {number} row Row position starting at 0 from top-to-down
+ * @param {number} col Column position starting at 0 from left-to-right
+ * @param {number} speed how fast the enemy should move. Formula used: currentX + (deltaTime * speed * 100)
+ * @constructor
+ * @extends {Enemy}
+ */
 var Bug = function (row, col, speed) {
     Enemy.call(this, row, col, 'images/enemy-bug.png', speed);
 };
 
+/** Delgate with Bug.prototype */
 Bug.prototype = Object.create(Enemy.prototype);
+
+/** Reclaim Bug constructor */
 Bug.prototype.constructor = Bug;
 
-// Player Class
-var Player = function (row, col, image) {
-    Dynamic.call(this, row, col, image);
+/**
+ * Player class
+ * Creates a player
+ * @param {number} row Row position starting at 0 from top-to-down
+ * @param {number} col Column position starting at 0 from left-to-right
+ * @param {string} imagePath Image path
+ * @constructor
+ * @extends {DynamicGameObject}
+ */
+var Player = function (row, col, imagePath) {
+    DynamicGameObject.call(this, row, col, imagePath);
 
     // startX and startY will be the player's respawn position
     this.startX = this.x;
     this.startY = this.y;
 
+    // Player's points, displayed during play
     this.points = 0;
 
+    // Player's life, decreased when player intersects and enemy or drowns on water terrain
     this.lives = 5;
+    // Total number of keys collected
     this.keyItems = 0;
+    // Total number of stars collected
     this.stars = 0;
+    // Total number of gems collected (by color)
     this.gems = {
         blue: 0,
         orange: 0,
         green: 0
     };
 
+    // Number of stars needed to reveal the item Key for the current level
+    // This number is calculated when the level is being created in the function startGame()
     this.starCount = 0;
-    this.currentLevel = 1; // start from level 1
+    this.currentLevel = 1; // start game at level 1
 };
 
-Player.prototype = Object.create(Dynamic.prototype);
+/** Delgate with DynamicGameObject.prototype */
+Player.prototype = Object.create(DynamicGameObject.prototype);
+
+/** Reclaim Player constructor */
 Player.prototype.constructor = Player;
 
-// Subtracts life by 1 and resets player to starting position
+/**
+ * Subtracts life by 1 and resets player starting position. If user ran out of lives, resets back to level 1.
+ */
 Player.prototype.die = function () {
 
+
+    // Subtract life by 1 and if user ran out of lives
     if (--this.lives <= 0) {
+        // Gameover sound
         audioGameOver.currentTime = 0;
         audioGameOver.play();
-        //gameOver();
+
     } else {
+        // Died sound
         audioDie.currentTime = 0;
         audioDie.play();
     }
+    // resets players position
     this.x = this.startX;
     this.y = this.startY;
 };
 
-// Checks if player intersects a game object
+/**
+ * Updates player gameplay stats.
+ * Invokes player.die() if player is intersecting an enemy or standing dead zone.
+ * Invokes player.handleItem() if player is intersecting an item
+ */
 Player.prototype.update = function () {
 
     // Kill player if toon intersects with an enemy
@@ -299,8 +439,7 @@ Player.prototype.update = function () {
             this.handleItem(allItems[i]);
         }
     }
-    // If player is on top of canvas, check if he is standing a selector
-    // Kill player if he is standing on water terrain
+    // If player is on row 0, check if he is standing on a dead zone (Example: water terrain)
     if (this.y < 0) {
         l = allSelectors.length;
         // Assume he is standing on a dead zone
@@ -318,14 +457,25 @@ Player.prototype.update = function () {
     }
 };
 
-// This method recevies an item and updates player stats accordingly
+/**  recevies an item and updates player stats accordingly */
+
+/**
+ * Plays the item's sounds and updates player stats with the given item
+ * @param {Item} item item to collect
+ */
 Player.prototype.handleItem = function (item) {
 
+    // Generic items
     item.playSound();
+    this.points += item.points;
+    item.isAvailable = false; // once collected make item unavailable
 
-    // Check what type of item and update player stats
+    // Game items have different characteristics
+    // So Figure out the type of item then execute the appropriate actions
+
     if (item instanceof Gem) {
 
+        // Update player stat by gem color
         switch (item.color) {
             case 1:
                 this.gems.orange++;
@@ -337,14 +487,16 @@ Player.prototype.handleItem = function (item) {
                 this.gems.blue++;
                 break;
             default:
-                console.log('This gem doesn\'t exist');
+                console.log('This gem doesn\'t exist'); // this should never be reached.
         }
 
     } else if (item instanceof Star) {
 
-        this.lives++; // User gains a lfie
+        this.lives++; // User gains a life
+        this.stars++; // update total stars collected
         // If item is a star check if user collected all stars in current level
-        if (++this.stars == this.starCount) {
+        // If  this.starts == this.starCount then its time to reveal the Key to advance to the next level
+        if (this.stars == this.starCount) {
             // Find the key on allItems and make it visiable on map
             for (var i = 0; i < allItems.length; i++) {
                 if (allItems[i] instanceof Key) {
@@ -353,22 +505,24 @@ Player.prototype.handleItem = function (item) {
                 }
             }
         }
+
     } else if (item instanceof Key) { // If user collected a key, advance to next level!
         this.keyItems++;
-        //this.stars = 0; // reset player's starCount
-        gameLevel(++this.currentLevel); // next level!
-
+        this.currentLevel++; // next level!
+        startGame(this); // create the level
     }
-    this.points += item.points;
-    // once collected make item unavailable
-    item.isAvailable = false;
 
 };
 
-// Gets called when player releases a valid key
-Player.prototype.handleInput = function (keyCode) {
+/**
+ * Gets called when player releases a valid key
+ * Moves player
+ * @param {string} direction direction to move player
+ */
+Player.prototype.handleInput = function (direction) {
 
-    switch (keyCode) {
+    // Only move if player does pass the grid boundaries and is obstacle free (Rocks will prevent player from moving)
+    switch (direction) {
         case 'left':
             if (this.x > 0 && this.isObstacleFree(-101, 0))
                 this.x -= 101;
@@ -389,6 +543,12 @@ Player.prototype.handleInput = function (keyCode) {
 
 };
 
+/**
+ * Returns true if no obstacle was found
+ * @param dx delta x from the players current x position
+ * @param dy delta y from the players current y position
+ * @returns {boolean} true if no obstacles were found
+ */
 Player.prototype.isObstacleFree = function (dx, dy) {
 
     for (var i = 0; i < allObstacles.length; i++) {
@@ -402,10 +562,14 @@ Player.prototype.isObstacleFree = function (dx, dy) {
     return true;
 };
 
-function gameLevel(level) {
+/**
+ *
+ * @param {Player} player
+ */
+function startGame(player) {
 
     // All game levels
-    switch (level) {
+    switch (player.currentLevel) {
         case 1:
             allEnemies = [
                 new Bug(1, -1, 2), new Bug(2, -3, 2),
@@ -473,7 +637,7 @@ function gameLevel(level) {
         }
     }
 
-    // Number of stars required to reveal key
+    // Update of stars required to reveal key
     player.starCount += starCount;
 
 }
@@ -487,10 +651,7 @@ var allItems = [];
 var allSelectors = [];
 var allObstacles = [];
 
-audioTheme.loop = true;
-audioTheme.play();
-gameLevel(1);
-
+startGame(player);
 // This listens for key releases and sends the keys to
 // Player.handleInput() method.
 document.addEventListener('keyup', function (e) {
