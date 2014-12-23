@@ -57,7 +57,7 @@ var Engine = (function(global) {
          * function again as soon as the browser is able to draw another frame.
          */
         win.requestAnimationFrame(main);
-    };
+    }
 
     /* This function does some initial setup that should only occur once,
      * particularly setting the lastTime variable that is required for the
@@ -79,6 +79,11 @@ var Engine = (function(global) {
      * on the entities themselves within your app.js file).
      */
     function update(dt) {
+        if (player.lives <= 0) {
+            player.reset();
+            playerStatPoints = 0;
+            startGame(player);
+        }
         updateEntities(dt);
         // checkCollisions();
     }
@@ -151,17 +156,23 @@ var Engine = (function(global) {
 
         renderEntities();
 
+        // Draws player stats
         playerStats();
     }
 
+    /**
+     * Draws all the custom obstacles (Example: Rocks)
+     */
     function renderObstacles() {
         for (var i = 0; i < allObstacles.length; i++) {
             allObstacles[i].render();
         }
     }
 
+    /**
+     * Draws all available items
+     */
     function renderItems() {
-        // Draws all available items
         for (var i = 0; i < allItems.length; i++) {
             if (allItems[i].isAvailable) {
                 allItems[i].render();
@@ -169,33 +180,37 @@ var Engine = (function(global) {
         }
     }
 
+    /**
+     * Draws the player stats on canvas
+     */
     function playerStats() {
 
+        var i;
         /**
-         * Draws the player's health (hearts on top of the canvas)
+         * Draws the player's health (hearts on the top left)
          */
-        for (var i = 0; i < player.lives; i++) {
+        for (i = 0; i < player.lives; i++) {
             ctx.drawImage(Resources.get(Const.misc.HEART), 30 * i, 0, 30,50);
         }
-
-        // Right sidebar
 
         // By incrementing playerStatPoints on every tick
         // the player gets to visually see his/her points increase
         if (player.points > playerStatPoints) {
             playerStatPoints++;
         }
+
         ctx.fillText('Points: ' + playerStatPoints, 515, 115);
 
-        ctx.drawImage(Resources.get(Const.misc.STAR), 512, 110, 40, 68);
+        // Draw the reset of the items along with their current collect count
+        ctx.drawImage(Resources.get(Const.misc.STAR), 512, 110, 40, 68); // Star
         ctx.fillText('x' + player.stars, 546, 165);
 
-        ctx.drawImage(Resources.get(Const.misc.KEY), 512, 150, 40, 68);
+        ctx.drawImage(Resources.get(Const.misc.KEY), 512, 150, 40, 68); // Key
         ctx.fillText('x' + player.keyItems, 546, 205);
 
 
-        // Draws player gem stats
-        for (var i = 0; i < gems.length; i++) {
+        // blue orange and gree gems
+        for (i = 0; i < gems.length; i++) {
             ctx.drawImage(Resources.get(gems[i]), 516, 200 + (i * 40), 30, 51);
             ctx.fillText('x' + player.gems[playerGems[i]], 546, 240 + (i * 40));
         }
@@ -252,16 +267,16 @@ var Engine = (function(global) {
      */
     global.ctx = ctx;
 
-    var gems = Object.keys(Const.gems);
-
+    // Default font used
     ctx.font = '12pt Calibri';
 
     var gems = [
         Const.gems.BLUE,
         Const.gems.ORANGE,
-        Const.gems.GREEN,
+        Const.gems.GREEN
     ];
-    var playerStatPoints = 0; // used for player point increment animation
+
+    var playerStatPoints = 0; // Used for creating a visual effect when increasing the player's points
 
     var playerGems = Object.keys(player.gems);
 

@@ -99,13 +99,13 @@ StaticGameObject.prototype.render = function () {
  * @param {number} col Column position starting at 0 from left-to-right
  * @param {string} imagePath Image path
  * @param {boolean} isAvailable Item should be not display on canvas when isAvailable == false (Usually set to false after being collected)
- * @param {number} number of points the player will get when the item is collected
+ * @param {number} points number of points the player will get when the item is collected
  * @param {Object} audio
  * @constructor
  * @extends {StaticGameObject}
  */
-var Item = function (row, col, image, isAvailable, points, audio) {
-    StaticGameObject.call(this, row, col, image);
+var Item = function (row, col, imagePath, isAvailable, points, audio) {
+    StaticGameObject.call(this, row, col, imagePath);
     this.audio = audio;
     this.isAvailable = isAvailable;
     this.points = points;
@@ -125,7 +125,7 @@ Item.prototype.playSound = function () {
 
 /**
  * Gem Class
- * Creates a Gem on with specified position and color.
+ * Creates a Gem with specified position and color.
  * Colors:
  *   blue = 5 points
  *   green = 10 points
@@ -266,8 +266,8 @@ Rock.prototype.constructor = Rock;
  * @constructor
  * @extends {GameObject}
  */
-var DynamicGameObject = function (row, col, ImagePath) {
-    GameObject.call(this, row, col, ImagePath);
+var DynamicGameObject = function (row, col, imagePath) {
+    GameObject.call(this, row, col, imagePath);
 };
 
 /** Draws the object on canvas */
@@ -367,6 +367,18 @@ var Player = function (row, col, imagePath) {
     this.startX = this.x;
     this.startY = this.y;
 
+    // Resets all player stats
+    this.reset();
+};
+
+/** Delgate with DynamicGameObject.prototype */
+Player.prototype = Object.create(DynamicGameObject.prototype);
+
+/** Reclaim Player constructor */
+Player.prototype.constructor = Player;
+
+Player.prototype.reset = function() {
+
     // Player's points, displayed during play
     this.points = 0;
 
@@ -387,34 +399,35 @@ var Player = function (row, col, imagePath) {
     // This number is calculated when the level is being created in the function startGame()
     this.starCount = 0;
     this.currentLevel = 1; // start game at level 1
+
+    // resets players position
+    this.x = this.startX;
+    this.y = this.startY;
 };
-
-/** Delgate with DynamicGameObject.prototype */
-Player.prototype = Object.create(DynamicGameObject.prototype);
-
-/** Reclaim Player constructor */
-Player.prototype.constructor = Player;
-
 /**
  * Subtracts life by 1 and resets player starting position. If user ran out of lives, resets back to level 1.
  */
 Player.prototype.die = function () {
 
 
-    // Subtract life by 1 and if user ran out of lives
-    if (--this.lives <= 0) {
+    // resets players position
+    this.x = this.startX;
+    this.y = this.startY;
+
+    // Subtract life by 1
+    this.lives--;
+
+    // play the appropriate sound
+    if (this.lives <= 0) {
         // Gameover sound
         audioGameOver.currentTime = 0;
         audioGameOver.play();
-
     } else {
         // Died sound
         audioDie.currentTime = 0;
         audioDie.play();
     }
-    // resets players position
-    this.x = this.startX;
-    this.y = this.startY;
+
 };
 
 /**
@@ -426,15 +439,18 @@ Player.prototype.update = function () {
 
     // Kill player if toon intersects with an enemy
     var l = allEnemies.length;
-    for (var i = 0; i < l; i++) {
+    var i;
+
+    for (i = 0; i < l; i++) {
         if (this.intersects(allEnemies[i])) {
             this.die();
+            return;
         }
     }
 
     // Collect intersected items
     l = allItems.length;
-    for (var i = 0; i < l; i++) {
+    for (i = 0; i < l; i++) {
         if (this.intersects(allItems[i]) && allItems[i].isAvailable) {
             this.handleItem(allItems[i]);
         }
@@ -445,7 +461,7 @@ Player.prototype.update = function () {
         // Assume he is standing on a dead zone
         var isOnSelector = false;
         // check all selectors
-        for (var i = 0; i < l; i++) {
+        for (i = 0; i < l; i++) {
             if (this.intersects(allSelectors[i])) {
                 isOnSelector = true; // player is in safe zone
             }
@@ -563,8 +579,10 @@ Player.prototype.isObstacleFree = function (dx, dy) {
 };
 
 /**
+ * Before calling this method create global scope
+ * arrays called allEnemies, allItems, allSelectors, allObstacles
  *
- * @param {Player} player
+ * @param {Player} player player to start the game with
  */
 function startGame(player) {
 
@@ -573,7 +591,7 @@ function startGame(player) {
         case 1:
             allEnemies = [
                 new Bug(1, -1, 2), new Bug(2, -3, 2),
-                new Bug(3, -1, 1),
+                new Bug(3, -1, 1)
             ];
             allItems = [
                 new Gem(1, 0, 'blue'), new Gem(2, 2, 'green'),
@@ -581,7 +599,7 @@ function startGame(player) {
                 new Key(5, 0)
             ];
             allSelectors = [
-                new Selector(0, 2),
+                new Selector(0, 2)
             ];
             allObstacles = [
                 new Rock(4, 2)
@@ -590,7 +608,7 @@ function startGame(player) {
         case 2:
             allEnemies = [
                 new Bug(1, -1, 1), new Bug(1, -3, 1),
-                new Bug(3, -1, 1), new Bug(3, -3, 1),
+                new Bug(3, -1, 1), new Bug(3, -3, 1)
             ];
             allItems = [
                 new Gem(1, 0, 'green'), new Gem(2, 2, 'orange'),
@@ -604,16 +622,16 @@ function startGame(player) {
             allObstacles = [
                 new Rock(2, 0), new Rock(2, 1),
                 new Rock(2, 3), new Rock(2, 4)
-            ]
+            ];
             break;
         case 3:
             allEnemies = [
                 new Bug(1, -1, 2), new Bug(2, -3, 3),
-                new Bug(3, -1, 1), new Bug(3, -3, 1),
+                new Bug(3, -1, 1), new Bug(3, -3, 1)
             ];
             allItems = [
-                new Gem(1, 0, 'orange'), new Gem(2, 0, 'orange'),
-                new Gem(2, 4, 'orange'), new Gem(1, 4, 'orange'),
+                new Gem(1, 0, 'orange'),
+                 new Gem(1, 4, 'orange'),
                 new Gem(3, 0, 'orange'), new Gem(3, 4, 'orange'),
                 new Star(0, 0), new Star(0, 2), new Star(0, 4),
                 new Star(2, 2), new Key(5, 0)
@@ -623,7 +641,10 @@ function startGame(player) {
                 new Selector(0, 2),
                 new Selector(0, 4)
             ];
-            allObstacles = [];
+            allObstacles = [
+                new Rock(4,0), new Rock(4,4),
+                new Rock(2,1), new Rock(2,3)
+            ];
             break;
         default:
         //wonGame();
@@ -637,7 +658,7 @@ function startGame(player) {
         }
     }
 
-    // Update of stars required to reveal key
+    // Update the number of stars required to reveal the next key
     player.starCount += starCount;
 
 }
@@ -645,13 +666,15 @@ function startGame(player) {
 // Create player at Row: 5 Col: 2
 var player = new Player(5, 2, Const.player.BOY);
 
-// Create Enemies
+// Creating the global arrays required to start the game
 var allEnemies = [];
 var allItems = [];
 var allSelectors = [];
 var allObstacles = [];
 
+// Start the game
 startGame(player);
+
 // This listens for key releases and sends the keys to
 // Player.handleInput() method.
 document.addEventListener('keyup', function (e) {
