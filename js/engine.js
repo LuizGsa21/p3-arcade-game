@@ -121,7 +121,7 @@ var Engine = (function(global) {
             row, col;
 
         // Clears entire canvas
-        ctx.putImageData(blankImg, 0, 0);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
 
         /* Loop through the number of rows and columns we've defined above
          * and, using the rowImages array, draw the correct image for that
@@ -224,9 +224,6 @@ var Engine = (function(global) {
     function reset() {
         // noop
     }
-
-    // This blankImage will be used to erase the canvas.
-    var blankImg = ctx.createImageData(canvas.width, canvas.height);
 
     /* Go ahead and load all of the images we know we're going to need to
      * draw our game level. Then set init as the callback method, so that when
