@@ -1,4 +1,4 @@
-'use strict';
+// Game audio files
 var audioDie = new Audio('audio/die.wav');
 var audioCollect = new Audio('audio/collect_gem.wav');
 var audioGameOver = new Audio('audio/gameover.wav');
@@ -590,51 +590,65 @@ function startGame(player) {
     switch (player.currentLevel) {
         case 1:
             allEnemies = [
-                new Bug(1, -1, 2), new Bug(2, -3, 2),
+                new Bug(1, -1, 2),
+                new Bug(2, -3, 2),
                 new Bug(3, -1, 1)
             ];
             allItems = [
-                new Gem(1, 0, 'blue'), new Gem(2, 2, 'green'),
-                new Gem(1, 4, 'blue'), new Star(0, 2),
+                new Gem(1, 0, 'blue'),
+                new Gem(2, 2, 'green'),
+                new Gem(1, 4, 'blue'),
+                new Star(0, 2),
                 new Key(5, 0)
             ];
-            allSelectors = [
-                new Selector(0, 2)
-            ];
-            allObstacles = [
-                new Rock(4, 2)
-            ];
+            allSelectors = [new Selector(0, 2)];
+            allObstacles = [new Rock(4, 2)];
             break;
         case 2:
             allEnemies = [
-                new Bug(1, -1, 1), new Bug(1, -3, 1),
-                new Bug(3, -1, 1), new Bug(3, -3, 1)
+                new Bug(1, -1, 1),
+                new Bug(1, -3, 1),
+                new Bug(3, -1, 1),
+                new Bug(3, -3, 1)
             ];
             allItems = [
-                new Gem(1, 0, 'green'), new Gem(2, 2, 'orange'),
-                new Gem(1, 4, 'green'), new Gem(3, 0, 'blue'),
-                new Gem(3, 4, 'blue'), new Star(0, 1),
-                new Star(0, 3), new Key(5, 0)
+                new Gem(1, 0, 'green'),
+                new Gem(2, 2, 'orange'),
+                new Gem(1, 4, 'green'),
+                new Gem(3, 0, 'blue'),
+                new Gem(3, 4, 'blue'),
+                new Star(0, 1),
+                new Star(0, 3),
+                new Key(5, 4)
             ];
             allSelectors = [
-                new Selector(0, 1), new Selector(0, 3)
+                new Selector(0, 1),
+                new Selector(0, 3)
             ];
             allObstacles = [
-                new Rock(2, 0), new Rock(2, 1),
-                new Rock(2, 3), new Rock(2, 4)
+                new Rock(2, 0),
+                new Rock(2, 1),
+                new Rock(2, 3),
+                new Rock(2, 4)
             ];
             break;
         case 3:
             allEnemies = [
-                new Bug(1, -1, 2), new Bug(2, -3, 3),
-                new Bug(3, -1, 1), new Bug(3, -3, 1)
+                new Bug(1, -1, 2),
+                new Bug(2, -3, 3),
+                new Bug(3, -1, 1),
+                new Bug(3, -3, 1)
             ];
             allItems = [
-                new Gem(1, 0, 'orange'),
-                 new Gem(1, 4, 'orange'),
-                new Gem(3, 0, 'orange'), new Gem(3, 4, 'orange'),
-                new Star(0, 0), new Star(0, 2), new Star(0, 4),
-                new Star(2, 2), new Key(5, 0)
+                new Gem(1, 0, 'green'),
+                new Gem(1, 4, 'green'),
+                new Gem(3, 0, 'green'),
+                new Gem(3, 4, 'green'),
+                new Star(0, 0),
+                new Star(0, 2),
+                new Star(0, 4),
+                new Star(2, 2),
+                new Key(5, 0)
             ];
             allSelectors = [
                 new Selector(0, 0),
@@ -642,8 +656,37 @@ function startGame(player) {
                 new Selector(0, 4)
             ];
             allObstacles = [
-                new Rock(4,0), new Rock(4,4),
-                new Rock(2,1), new Rock(2,3)
+                new Rock(4,0),
+                new Rock(4,4),
+                new Rock(2,1),
+                new Rock(2,3)
+            ];
+            break;
+        case 4:
+            allEnemies = [
+                new Bug(1, -4, 2),
+                new Bug(2, -3, 2),
+                new Bug(3, -2, 2),
+            ];
+            allItems = [
+                new Gem(1, 0, 'green'),
+                new Gem(1, 4, 'green'),
+                new Gem(3, 0, 'green'),
+                new Gem(3, 4, 'green'),
+                new Star(2, 2),
+                new Key(4, 2)
+            ];
+            allSelectors = [
+                new Selector(2, 2)
+            ];
+            allObstacles = [
+                new Rock(3,1),
+                new Rock(3,2),
+                new Rock(3,3),
+                new Rock(4,3),
+                new Rock(4,1),
+                new Rock(2,1),
+                new Rock(2,3)
             ];
             break;
         default:
