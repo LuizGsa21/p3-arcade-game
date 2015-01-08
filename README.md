@@ -1,12 +1,16 @@
 Project 3 Arcade Game
 ===
 
-Recreate the classic arcade game Frogger.
+Recreate the classic frogger arcade game using JavaScript! :)
 
 How to Play
 ===
+Just click [here](http://luizgsa21.github.io/p3-arcade-game/) to play, use Chrome browser for best experience.
 
-Collect all the stars on the map to reveal the hidden key. Then obtain the key to advance to the next level.
+Objective
+===
+
+Collect all the stars on the map to reveal the hidden key, obtain the key to advance to the next level.
 
 Collectable items
 ===
@@ -21,3 +25,4 @@ Collectable items
 * **Key**: advances to the next level
 
 **Total levels**: 4
+
