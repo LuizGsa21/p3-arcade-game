@@ -79,7 +79,13 @@ var Engine = (function(global) {
      * on the entities themselves within your app.js file).
      */
     function update(dt) {
-        if (player.lives <= 0) {
+        if (player.currentLevel > 4) {
+            alert('Congratulation! You won!! Your journey ends here...');
+            player.reset();
+            playerStatPoints = 0;
+            startGame(player);
+        } else if (player.lives <= 0) {
+            alert('You died! The game has restarted to level 1.');
             player.reset();
             playerStatPoints = 0;
             startGame(player);

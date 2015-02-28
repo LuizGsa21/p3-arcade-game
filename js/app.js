@@ -690,7 +690,7 @@ function startGame(player) {
             ];
             break;
         default:
-        //wonGame();
+            // game won
     }
 
     // Get the number of stars on current game level
