@@ -1,6 +1,6 @@
 
 if (!bowser.chrome) {
-    alert('Use chrome browser for best experience. Press OK to continue.')
+    alert('Use Chrome browser for best experience. Press OK to continue.')
 }
 
 // Game audio files
