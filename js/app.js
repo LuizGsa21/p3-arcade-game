@@ -1,3 +1,8 @@
+
+if (!bowser.chrome) {
+    alert('Use chrome browser for best experience. Press OK to continue.')
+}
+
 // Game audio files
 var audioDie = new Audio('audio/die.wav');
 var audioCollect = new Audio('audio/collect_gem.wav');
