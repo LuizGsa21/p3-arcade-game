@@ -1,6 +1,9 @@
 
 if (!bowser.chrome) {
-    alert('Use Chrome browser for best experience. Press OK to continue.')
+    // show alert after game loads
+    setTimeout(function () {
+        alert('Use Chrome browser for best experience. Press OK to continue.')
+    }, 0);
 }
 
 // Game audio files
@@ -55,7 +58,7 @@ var Const = {
 
 /**
  * GameObject class
- * Creates a GameObject object on the specified row and column
+ * Creates a GameObject on the specified row and column
  * @param {number} row Row position starting at 0 from top-to-down
  * @param {number} col Column position starting at 0 from left-to-right
  * @param {string} imagePath Image path
@@ -77,7 +80,7 @@ var GameObject = function(row, col, imagePath) {
 /**
  * StaticGameObject class
  * All objects that are static inherit this class.
- * StaticGameObject objects are objects that do not move once placed on canvas
+ * StaticGameObject are objects that do not move once placed on canvas
  * Examples: Gem, Star, Key
  * @param {number} row Row position starting at 0 from top-to-down
  * @param {number} col Column position starting at 0 from left-to-right
@@ -594,6 +597,7 @@ function startGame(player) {
     // All game levels
     switch (player.currentLevel) {
         case 1:
+            // create map for level 1
             allEnemies = [
                 new Bug(1, -1, 2),
                 new Bug(2, -3, 2),
@@ -610,6 +614,7 @@ function startGame(player) {
             allObstacles = [new Rock(4, 2)];
             break;
         case 2:
+            // create map for level 2
             allEnemies = [
                 new Bug(1, -1, 1),
                 new Bug(1, -3, 1),
@@ -638,6 +643,7 @@ function startGame(player) {
             ];
             break;
         case 3:
+            // create map for level 3
             allEnemies = [
                 new Bug(1, -1, 2),
                 new Bug(2, -3, 3),
@@ -668,6 +674,7 @@ function startGame(player) {
             ];
             break;
         case 4:
+            // create map for level 4
             allEnemies = [
                 new Bug(1, -4, 2),
                 new Bug(2, -3, 2),
@@ -696,6 +703,7 @@ function startGame(player) {
             break;
         default:
             // game won
+            alert('Congralations!');
     }
 
     // Get the number of stars on current game level
